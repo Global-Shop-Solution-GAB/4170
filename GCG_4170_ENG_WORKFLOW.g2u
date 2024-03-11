@@ -1,0 +1,304 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..Create
+Gui.Form..Caption("Reference Info")
+Gui.Form..Size(5280,5985)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..MousePointer(0)
+Gui.Form..Event(UnLoad,Form_UnLoad)
+Gui.Form.txtPart.Create(TextBox,"",True,2115,300,0,1590,375,False,0,"Arial",8,-2147483643,1)
+Gui.Form.txtPart.Locked(True)
+Gui.Form.lbl1.Create(Label,"PART",True,735,255,0,1635,180,True,0,"Arial",8,-2147483633,0)
+Gui.Form.lbl2.Create(Label,"ENC #",True,705,255,0,120,165,True,0,"Arial",8,-2147483633,0)
+Gui.Form.txtENC.Create(TextBox,"",True,1215,300,0,105,360,False,0,"Arial",8,-2147483643,1)
+Gui.Form.txtENC.Locked(True)
+Gui.Form.txtProgramNumber.Create(TextBox,"",True,1215,300,0,120,1050,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txtProgramNumber.MaxLength(6)
+Gui.Form.lbl3.Create(Label,"Program Number",True,1455,255,0,75,855,True,0,"Arial",8,-2147483633,0)
+Gui.Form.lbl4.Create(Label,"Program Manager",True,1500,255,0,1695,840,True,0,"Arial",8,-2147483633,0)
+Gui.Form.txtProgramManager.Create(TextBox,"",True,1215,300,0,1725,1035,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txtProgramManager.MaxLength(2)
+Gui.Form.lbl5.Create(Label,"Quality Engineer",True,1425,255,0,3360,825,True,0,"Arial",8,-2147483633,0)
+Gui.Form.txtQualityEngineer.Create(TextBox,"",True,1215,300,0,3375,1050,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txtQualityEngineer.MaxLength(2)
+Gui.Form.txtFile.Create(TextBox,"",True,3285,300,0,30,1695,True,0,"Arial",8,-2147483643,1)
+Gui.Form.cmdBrswr.Create(Button)
+Gui.Form.cmdBrswr.Size(585,375)
+Gui.Form.cmdBrswr.Position(3420,1650)
+Gui.Form.cmdBrswr.Caption("^")
+Gui.Form.cmdBrswr.Event(Click,cmdBrswr_Click)
+Gui.Form.lvwFiles.Create(ListView)
+Gui.Form.lvwFiles.Size(4860,2685)
+Gui.Form.lvwFiles.Position(105,2100)
+Gui.Form.lvwFiles.View(3)
+Gui.Form.lvwFiles.AddListViewColumn("File",4750,0)
+Gui.Form.lbl6.Create(Label,"Add Files",True,1065,255,0,105,1500,True,0,"Arial",8,-2147483633,0)
+Gui.Form.cmdAdd.Create(Button)
+Gui.Form.cmdAdd.Size(855,375)
+Gui.Form.cmdAdd.Position(4110,1665)
+Gui.Form.cmdAdd.Caption("Add")
+Gui.Form.cmdAdd.Event(Click,cmdAdd_Click)
+Gui.Form.cmdSave.Create(Button)
+Gui.Form.cmdSave.Size(855,375)
+Gui.Form.cmdSave.Position(3975,4905)
+Gui.Form.cmdSave.Caption("Save")
+Gui.Form.cmdSave.Event(Click,cmdSave_Click)
+Gui.Form.cmdDelete.Create(Button)
+Gui.Form.cmdDelete.Size(855,375)
+Gui.Form.cmdDelete.Position(165,4920)
+Gui.Form.cmdDelete.Caption("Delete")
+Gui.Form.cmdDelete.Event(Click,cmdDelete_Click)
+Gui.Form2..Create
+Gui.Form2..Caption("Email Info")
+Gui.Form2..Size(5625,6000)
+Gui.Form2..MinX(0)
+Gui.Form2..MinY(0)
+Gui.Form2..Position(0,0)
+Gui.Form2..BackColor(-2147483633)
+Gui.Form2..MousePointer(0)
+Gui.Form2..Event(UnLoad,Form2_UnLoad)
+Gui.Form2.txtSubject.Create(TextBox,"",True,2940,300,0,105,315,True,0,"Arial",8,-2147483643,1)
+Gui.Form2.lbl1.Create(Label,"Subject",True,795,255,0,135,105,True,0,"Arial",8,-2147483633,0)
+Gui.Form2.lbl2.Create(Label,"Body",True,630,255,0,90,915,True,0,"Arial",8,-2147483633,0)
+Gui.Form2.txtBody.Create(TextboxM)
+Gui.Form2.txtBody.Size(5265,4170)
+Gui.Form2.txtBody.Position(60,1140)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.ProgramNumber.Declare(String)
+V.Global.ProgramManager.Declare(String)
+V.Global.QualityEngineer.Declare(String)
+V.Global.sPart.Declare(String)
+V.Global.sENC.Declare(String)
+V.Global.iID.Declare(long)
+V.Global.sSubject.Declare(String)
+V.Global.sBody.Declare(String)
+V.Global.sLine.Declare(String)
+V.Global.iWFID.Declare(Long)
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+F.Intrinsic.Control.SetErrorHandler("Main_Err")
+F.Intrinsic.Control.ClearErrors
+V.Local.sError.Declare(String)
+v.Local.sTitle.Declare(string)
+v.Local.sSQL.Declare(string)
+v.Local.sRet.Declare(string)
+F.ODBC.Connection!Con.OpenConnection(v.Ambient.PDSN,v.Ambient.PUser,v.Ambient.PPass)
+f.Intrinsic.Control.If(v.Caller.Hook,=,37606)
+	'Save button on Maintain Engineering Change control 
+	'We need to check to see if the meta data already exists.
+	f.Intrinsic.String.Build("SELECT WF_ID FROM ATG_WF_HEADER WHERE META_0 = '{0}' AND META_1 = '{1}' AND META_2 = '{2}' ",v.Passed.000002,v.Passed.000056.Format00000000,v.Passed.ENGST02_000022,v.Local.sSQL)
+	f.ODBC.Connection!Con.ExecuteAndReturn(v.Local.sSQL,v.Local.sRet)
+	f.Intrinsic.String.Replace(v.Local.sRet,"*!*","",v.Local.sRet)
+	f.Intrinsic.Control.If(v.Local.sRet.Trim,=,"")
+		f.Global.WorkFlow.GetTemplateIDFromTitle("Engineering Change Notice",v.Global.iID)
+		f.Intrinsic.Control.If(v.Global.iID,=,-1)
+			'we don't have the work flow template set up
+			f.Intrinsic.UI.Msgbox("Template Work Flow: Engineering Change Notice does not exist. No Work Flow Created.")
+		f.Intrinsic.Control.Else
+		'we have a template so create a new one for this ENC
+			Function.Intrinsic.BDF.Load("AUX001", "AUX001")
+			Function.Intrinsic.BDF.ReadRow("AUX001", 0, v.Local.sRet)
+			F.Intrinsic.String.Split(v.Local.sRet, "|~|", V.Local.sRet)
+			F.Intrinsic.String.Build("{0}{1}", V.Local.sRet(1).Trim, V.Local.sRet(2).Trim, v.Global.sPart)
+			F.Intrinsic.String.RTrim(v.Global.sPart, v.Global.sPart)
+			F.Intrinsic.String.Right(V.Passed.000056,3,V.Global.sENC)
+			'set GUI and open 
+			GUI.Form.txtPart.Text(v.Global.sPart)
+			GUI.Form.txtENC.Text(V.Global.sENC)
+			GUI.Form..Show
+		f.Intrinsic.Control.EndIf
+	f.Intrinsic.Control.EndIf
+Function.Intrinsic.Control.ElseIf(V.Caller.Hook, =, 34700)
+ 	F.Intrinsic.Control.CallSub(taskcomplete)
+f.Intrinsic.Control.EndIf
+F.Intrinsic.Control.ExitSub
+F.Intrinsic.Control.Label("Main_Err")
+F.Intrinsic.Control.If(V.Ambient.ErrorNumber,<>,0)
+	Function.Intrinsic.String.Concat("Project: GCG_4170_ENG_WORKFLOW.g2u",V.Ambient.Newline,V.Ambient.Newline,"Subroutine: ",V.Ambient.CurrentSubroutine,V.Ambient.NewLine,"Error Occurred ",V.Ambient.ErrorNumber," with description ",V.Ambient.ErrorDescription,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	f.Intrinsic.Control.End
+
+Function.Intrinsic.Control.EndIf
+Program.Sub.Main.End
+
+Program.Sub.Form_UnLoad.Start
+'check it was filled out 
+Function.Intrinsic.Control.If(V.Screen.Form!txtProgramNumber.Text, =, "")
+	F.Intrinsic.UI.Msgbox("Enter a Program Number")
+	Function.Intrinsic.Control.ExitSub
+Function.Intrinsic.Control.ElseIf(V.Screen.Form!txtProgramManager.Text, =, "")
+F.Intrinsic.UI.Msgbox("Enter the Program Manager")
+	Function.Intrinsic.Control.ExitSub
+	Function.Intrinsic.Control.ElseIf(V.Screen.Form!txtQualityEngineer.Text, =, "")
+F.Intrinsic.UI.Msgbox("Enter the Quality Engineer")
+	Function.Intrinsic.Control.ExitSub
+Function.Intrinsic.Control.Else
+	V.Global.ProgramNumber.Set(V.Screen.Form!txtProgramNumber.Text)
+	V.Global.ProgramManager.Set(V.Screen.Form!txtProgramManager.Text)
+	V.Global.QualityEngineer.Set(V.Screen.Form!txtQualityEngineer.Text)
+	'close the form 
+	Gui.Form..Visible(False)
+	F.Intrinsic.Control.CallSub(createsave)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Form_UnLoad.End
+
+Program.Sub.CreateSave.Start
+V.Local..BulkDeclareString(sTitle, sRow, ssql, sDocId, sFilePath, sFileName, sType)
+V.Local.iC.Declare(Long)
+F.Intrinsic.String.Build("ENC-{0}-{1}-{2}-{3}",V.Global.sPart,V.Global.ProgramNumber,V.Global.ProgramManager,V.Global.QualityEngineer,v.Local.sTitle)
+f.Intrinsic.String.Right(v.Local.sTitle,50, v.Local.sTitle) 
+F.Global.WorkFlow.CreateFromTemplate(v.Global.iID,v.Local.sTitle,v.Ambient.Date,v.Ambient.Date,v.Caller.User,1,V.Global.iID)			
+'set meta data in the header
+'set meta data 0 as ECN Prefix
+f.Global.WorkFlow.SetMetaData(v.Global.iID,1,0,v.Passed.000002)
+'set meta data 1 as ECN Number
+f.Global.WorkFlow.SetMetaData(v.Global.iID,1,1,v.Passed.000056.Format00000000)
+'set meta data 2 as Autherization Descripiton
+f.Global.WorkFlow.SetMetaData(v.Global.iID,1,2,v.Passed.ENGST02_000022)
+''set meta data in the lines
+''set meta data 0 as ECN Prefix
+'f.Global.WorkFlow.SetMetaData(v.Global.iID,0,0,v.Passed.000002)
+''set meta data 1 as ECN Number
+'f.Global.WorkFlow.SetMetaData(v.Global.iID,0,1,v.Passed.000056.Format00000000)
+''set meta data 2 as Autherization Descripiton
+'f.Global.WorkFlow.SetMetaData(v.Global.iID,0,2,v.Passed.ENGST02_000022)		
+'set Reference data
+F.Global.WorkFlow.SetReferenceData(V.Global.iID, 0, V.Global.sENC)
+F.Global.WorkFlow.SetReferenceData(V.Global.iID, 1, V.Global.sPart)
+F.Global.WorkFlow.SetReferenceData(V.Global.iID, 2, V.Global.ProgramNumber)
+F.Global.WorkFlow.SetReferenceData(V.Global.iID, 3, V.Global.ProgramManager)
+F.Global.WorkFlow.SetReferenceData(V.Global.iID, 4, V.Global.QualityEngineer)
+'set the data in the lines
+F.Intrinsic.String.Build("Update ATG_WF_LINES Set META_0 = '{0}', META_1 = '{1}', META_2 = '{2}' Where WF_ID = '{3}'", V.Passed.000002, V.Passed.000056.Format00000000, V.Passed.ENGST02_000022, V.Global.iID ,V.Local.ssql)
+Function.ODBC.Connection!Con.Execute(V.Local.ssql)
+F.Intrinsic.String.Build("Update ATG_WF_LINES Set REF_0 = '{0}', REF_1 = '{1}', REF_2 = '{2}', REF_3 = '{3}', REF_4 = '{4}' Where WF_ID = '{5}'", V.Global.sENC, V.Global.sPart, V.Global.ProgramNumber, V.Global.ProgramManager,V.Global.QualityEngineer,  V.Global.iID, V.Local.ssql)
+Function.ODBC.Connection!Con.Execute(V.Local.ssql)
+'sepatated by *!*
+GUI.Form.lvwFiles.RetrieveAllListItems(V.Local.sRow)
+F.Intrinsic.String.Split(V.Local.sRow, "*!*", V.Local.sRow)
+F.Intrinsic.Control.For(V.Local.iC, 0, V.Local.sRow.UBound, 1)
+	F.Intrinsic.String.Split(v.Local.sRow(v.Local.iC), "\", v.Local.sFileName)
+	F.Intrinsic.String.Split(v.Local.sFileName(v.Local.sFileName.UBound), ".", v.Local.sType)
+	v.Local.ssql.Set("SELECT Top 1 ACtive_Doc_ID from ATG_WF_ACTIVE_DOCS Order by ACtive_Doc_ID desc")
+	'Function.ODBC.Connection!Con.ExecuteAndReturn(V.Local.ssql, v.Local.sDocId)
+	'We need to use a recordset since this table could be empty
+	F.ODBC.Connection!Con.OpenLocalRecordSetRO("rstID",V.Local.sSQL)
+	
+	F.Intrinsic.Control.If(V.ODBC.Con!rstID.EOF,<>,True)
+		F.Intrinsic.Math.Add(v.ODBC.Con!rstID.FieldValLong!Active_Doc_ID, 1, v.Local.sDocId)
+	F.Intrinsic.Control.Else
+		V.Local.sDocID.Set("1")
+	F.Intrinsic.Control.EndIf
+	
+	F.ODBC.Con!rstID.Close
+	
+	F.Intrinsic.String.Build("Insert Into ATG_WF_Active_Docs (Doc_ID, File_Name, Active_Doc_ID) Values('{0}', '{1}', '{0}')", v.Local.sDocId, v.Local.sRow(v.Local.iC).Trim, v.Local.ssql)
+	Function.ODBC.Connection!Con.Execute(V.Local.ssql)
+	F.Intrinsic.String.Build("Insert Into ATG_WF_Doc_Ref (Assoc_ID, Assoc_Type, Doc_ID) Values('{0}', '1','{1}')", V.Global.iID, V.Local.sDocId, v.Local.ssql)
+	Function.ODBC.Connection!Con.Execute(V.Local.ssql)
+F.Intrinsic.Control.Next(V.Local.iC)
+Function.Intrinsic.Control.CallSub(endprogram)	
+Program.Sub.CreateSave.End
+
+Program.Sub.SendEmails.Start
+V.Local.iUserID.Declare(String)
+V.Local.iNext.Declare(Long)
+V.Local.sRet.Declare(String)
+V.Local.sGroup.declare(String)
+V.Local.ssql.Declare(String)
+V.Local.sSenderInfo.Declare(String)
+'V.Global.sLine
+'V.Global.iWFID
+'V.Global.sSubject
+'V.Global.sBody
+' get next user group
+F.Intrinsic.Math.Add(V.Global.sLine, 1, V.Local.iNext)
+F.Intrinsic.String.Build("Select SIGNOFF_USER_GRP from ATG_WF_LINES Where WF_ID = '{0}' And LINE = '{1}'" , V.Global.iWFID,V.Local.iNext, V.Local.ssql)
+Function.ODBC.Connection!Con.ExecuteAndReturn(V.Local.ssql, V.Local.sGroup)
+Function.Global.Security.GetGroupEmails(V.Local.sGroup, V.Local.sRet) 
+'check for no group members
+Function.Intrinsic.Control.If(V.Local.sRet, =, "")
+	F.Intrinsic.String.Build("There are no Members in the Signoff User Group {0}", V.Local.sGroup, V.Local.ssql)
+	F.Intrinsic.UI.Msgbox(V.Local.ssql)
+	Function.Intrinsic.Control.CallSub(endprogram)
+Function.Intrinsic.Control.EndIf
+F.Global.Security.GetUserId(V.Caller.User,V.Caller.CompanyCode,V.Local.iUserID)
+V.Local.sSenderInfo.Set("donotreply@KamPlastics.com*!*Do Not Reply")
+Function.Global.Messaging.QueueMessage(V.Caller.CompanyCode,V.Local.iUserID, V.Caller.Caller, V.Global.sSubject,V.Local.sSenderInfo, V.Local.sRet, V.Global.sBody)
+Function.Intrinsic.Control.CallSub(endprogram)
+Program.Sub.SendEmails.End
+
+Program.Sub.TaskComplete.Start
+V.Local.sRet.Declare(String)
+V.Local.ssql.Declare(String)
+V.Global.sLine.Set(V.Passed.WFLine)
+V.Global.iWFID.Set(V.Passed.WFID)
+'first check that this was not the last task
+'get last task for workflow
+F.Intrinsic.String.Build("Select top 1(Line) From ATG_WF_LINES Where WF_ID = '{0}' Order by Line desc", V.Global.iWFID, V.Local.ssql)
+Function.ODBC.Connection!Con.ExecuteAndReturn(V.Local.ssql, V.Local.sRet)
+Function.Intrinsic.Control.If(V.Local.sRet, > , V.Global.sLine)
+	Gui.Form2..Show
+Function.Intrinsic.Control.Else
+	Function.Intrinsic.Control.CallSub(endprogram)
+Function.Intrinsic.Control.EndIf
+Program.Sub.TaskComplete.End
+
+Program.Sub.Form2_UnLoad.Start
+V.Global.sSubject.Set(V.Screen.Form2!txtSubject.Text)
+V.Global.sBody.Set(V.Screen.Form2!txtBody.Text)
+Function.Intrinsic.Control.If(V.Global.sSubject, =, "")
+	F.Intrinsic.UI.Msgbox("Enter the Subject for the Email")
+	Function.Intrinsic.Control.ExitSub
+Function.Intrinsic.Control.ElseIf(V.Global.sBody, =, "")
+	F.Intrinsic.UI.Msgbox("Enter Body of the Email")
+	Function.Intrinsic.Control.ExitSub
+Function.Intrinsic.Control.Else
+	'call emails
+	Function.Intrinsic.Control.CallSub(sendemails)
+	'close the form 
+	Gui.Form2..Visible(False)
+Function.Intrinsic.Control.EndIf
+Program.Sub.Form2_UnLoad.End
+
+Program.Sub.EndProgram.Start
+F.ODBC.Connection!Con.Close
+F.Intrinsic.Control.End
+
+Program.Sub.EndProgram.End
+
+Program.Sub.cmdBrswr_Click.Start
+V.local.sRet.Declare(String)
+Function.Intrinsic.UI.ShowOpenFileDialog("","", "",V.local.sRet) 
+GUI.Form.txtFile.Text(V.Local.sRet)
+Program.Sub.cmdBrswr_Click.End
+
+Program.Sub.cmdAdd_Click.Start
+Function.Intrinsic.Control.If(V.Screen.Form!txtFile.Text, <>, "")
+	GUI.Form.lvwFiles.AddListItem(V.Screen.Form!txtFile.Text,V.Screen.Form!txtFile.Text)
+	GUI.Form.txtFile.Text("")
+Function.Intrinsic.Control.EndIf
+Program.Sub.cmdAdd_Click.End
+
+Program.Sub.cmdSave_Click.Start
+Function.Intrinsic.Control.CallSub(form_unload)
+Program.Sub.cmdSave_Click.End
+
+Program.Sub.cmdDelete_Click.Start
+Gui.Form.lvwFiles.removeitem(V.Screen.Form!lvwFiles.SelectedItemKey)
+Program.Sub.cmdDelete_Click.End
+
+Program.Sub.Comments.Start
+${$0$}$GCG_4170_ENG_WORKFLOW.g2u$}$SS1$}$8/18/2016 1:14:49 PM$}$False
+${$3$}$0$}$$}$0$}$-1$}$$}$12:00:00 AM$}$This will be a custom GAB Script that will trigger a workflow when the Save button on the Engineering Change Control Maintenance New screen is used.  
+
+The ECN will trigger the provided Workflow when the Save button is clicked.  This will happen under:
+Quality System > Transactions > Maintain Engineering Change Control > New
+
+The ECN number and Authorization Description will used in the WorkFlow Queue.
+Program.Sub.Comments.End
